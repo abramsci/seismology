@@ -25,6 +25,12 @@ from obspy import UTCDateTime
 from obspy.core.event.base import QuantityError
 
 
+############################## GLOBAL CONSTANTS ###############################
+# Paths to directories/files - may/should evolve to command line arguments
+TOOLKIT_DIR = Path(__file__).parent
+EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'example.ssd')
+OLD_EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'old_example.ssd')
+
 ############################# AUXILIARY FUNCTIONS #############################
 def _cleanup(line: str):
     """
@@ -38,7 +44,7 @@ def _cleanup(line: str):
 
 
 ################################## CLASSES ####################################
-@dataclass
+@dataclass(frozen=True)
 class ChannelInfo:
     """
     CHANNEL information line of SSD report.
@@ -58,7 +64,7 @@ class ChannelInfo:
     sta: str
     loc: str
     cha: str
-    info: list[str]
+    info: str
 
     @classmethod
     def _parse(cls, line: str):
@@ -67,13 +73,17 @@ class ChannelInfo:
         ['SV05', 'TC', '20-HHN', '1', '6', '##03', '55.9952,160.429,1835,0']
         Two basic parts: (1) channel code parts and (2) info
         """
-        words = cleanup(line).split(' ')[1:]
+        words = _cleanup(line).split(' ')[1:]
         if len(words) < 3:
             print('WARNING: Not enough codes in CHANNEL line!')
+            return None
         station, network, loc_cha, *info = words
         *location, channel = loc_cha.split('-')
+        info = ' '.join(info)
         if not location:
             location = ''
+        else:
+            location = ''.join(location)
         return cls(network, station, location, channel, info)
 
     def get_code(self) -> str:
@@ -109,7 +119,7 @@ class PickRecord:
         sign = None; dist = None; baz = None
         # Eliminating loop to parse block info into attributes
         while block:
-            line = cleanup(block[0])
+            line = _cleanup(block[0])
             words = line.split(' ')[1:]
             block.pop(0)
             match words:
@@ -130,7 +140,7 @@ class PickRecord:
                     dist, baz, *_ = tuple(float (i) for i
                                           in distaz_str.split(';'))
         # After block is exhausted - call default class constructor
-        return cls(channel, phase, time, level, qual, sign, dist, baz)
+        return cls(phase, time, level, qual, sign, dist, baz)
 
 
 @dataclass
@@ -165,7 +175,7 @@ class AmplitudeRecord:
         counts = None; ampl = None; unit = None; per = None; mag = None
         # Eliminating loop to parse block info into attributes
         while block:
-            line = cleanup(block[0])
+            line = _cleanup(block[0])
             words = line.split(' ')[1:]
             block.pop(0)
             match words:
@@ -190,8 +200,7 @@ class AmplitudeRecord:
                 case '[Magnitude]', _, mag_str, *_:
                     mag = float(mag_str)
         # After block is exhausted - call default class constructor
-        return cls(channel, phase, time, kind,
-                   sens, counts, ampl, unit, per, mag)
+        return cls(phase, time, kind, sens, counts, ampl, unit, per, mag)
 
 
 @dataclass
@@ -233,7 +242,7 @@ class OriginRecord:
         loc_lim = None; mag_type = None; mag = None; n_sta = None
         # Eliminating loop to parse block info into attributes
         while block:
-            line = cleanup(block[0].replace('=',' '))
+            line = _cleanup(block[0].replace('=',' '))
             words = line.split(' ')[1:]
             block.pop(0)
             match words:
@@ -323,13 +332,15 @@ class EventRecord:
         while content:
             if content[0].startswith('#SSDREPORT') or \
                             content[0].startswith('#FILENAME'):
-                words = cleanup(content[0].replace('=',' ')).split()
+                words = _cleanup(content[0].replace('=',' ')).split()
                 id = words[-1] if len(words) >= 2 else 'Unknown ID'
                 content.pop(0)
             elif content[0].startswith('#EARTHQUAKE'):
                 equake.append(content[0])
                 content.pop(0)
             elif content[0].startswith('#ARRIV'):
+                if not channel_line in arrs.keys():
+                    arrs[channel_line] = []
                 arrs[channel_line].append(content[0])
                 content.pop(0)
             elif content[0].startswith('#AMPLITUDE'):
@@ -352,14 +363,10 @@ class EventRecord:
                 content.pop(0)
         # Delegating part - creating new instances (of class attibutes)
         origin = OriginRecord._parse(equake)
-        for channel_line, arrival_block in arrs.items():
-            channel = ChannelInfo._parse(channel_line)
-            pick = PickRecord._parse(arrival_block)
-            picks[channel] = pick
-        for channel_line, amplitude_block in amps.items():
-            channel = ChannelInfo._parse(channel_line)
-            amplitude = AmplitudeRecord._parse(amplitude_block)
-            amplitudes[channel] = amplitude
+        picks = {ChannelInfo._parse(chan): PickRecord._parse(arr)
+                    for chan, arr in arrs.items()}
+        amplitudes = {ChannelInfo._parse(chan): AmplitudeRecord._parse(amp)
+                    for chan, amp in amps.items()}
         # Final part - uniting newly made attributes into an instance
         if not origin or not picks:
             return None
@@ -377,12 +384,15 @@ class EventRecord:
                 print(f'{path} is not a text file!')
                 return None
             # After content is read simply call _parse_ssd to proceed
-            return cls._parse_ssd(content)
+            return cls._parse(content)
 
 
 ############################## SCRIPT BEHAIVIOR ###############################
 # Python idiom to check if the module is not imported (script behaivior)
 if __name__ == '__main__':
-    # TODO: some testing needs to be done.
+    record = EventRecord.read(EXAMPLE_PATH)
+    print(record)
+    old_record = EventRecord.read(OLD_EXAMPLE_PATH)
+    print(old_record)
     exit(0)
 ###############################################################################
