@@ -13,3 +13,8 @@ NOT to reinvent bike parts - just assemble a custom touring bicycle ^-^
 ``` sh
 conda create --name seismology --channel conda-forge python=3.10 obspy pygmt pyasdf constructor
 ```
+
+
+## Some examples
+
+![Visualization result](../results/temp.svg)

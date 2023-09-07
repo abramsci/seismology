@@ -14,6 +14,9 @@ Miscellaneous quality of life functions.
 from pathlib import Path
 import math
 
+# Necessary packages (not in standard lib)
+import obspy
+
 
 ############################## GLOBAL CONSTANTS ###############################
 TOOLKIT_DIR = Path(__file__).parent
@@ -34,3 +37,7 @@ def nearest_power_of_two(x: float) -> int:
     bigger = next_power_of_two(x)
     return lesser if abs(x - lesser) < abs(bigger - x) else bigger
 
+
+########################### OBSPY RELATED FUNCTIONS ###########################
+def get_code(stats: obspy.core.trace.Stats) -> str:
+    return f'{stats.network}.{stats.station}.{stats.location}.{stats.channel}'
