@@ -16,8 +16,8 @@
 **License:** [MIT](../LICENSE)
 
 **Core dependencies:**
-* <Python version> (standard lib packages)
-E.g.: Python 3.4+ (`pathlib`), ObsPy 1.4.0
+* Python 3.4+ (`pathlib`)
+* obspy (tested for 1.4.0)
 """
 ################################## IMPORTS ####################################
 # Python standard library imports
@@ -27,12 +27,12 @@ from pathlib import Path
 import obspy
 
 # Local application/library specific imports
-#from misc import get_code, is_pow_of_two, nearest_pow_of_two
+from misc import nearest_power_of_two
 
 
 ############################## GLOBAL CONSTANTS ###############################
 # Paths to directories/files - may/should evolve to command line arguments
-ROOT_DIR = Path(__file__).parent
+TOOLKIT_DIR = Path(__file__).parent
 
 # Some hardcoded processing parameters - easier to keep track of
 NFFT: int = nearest_pow_of_two(64)

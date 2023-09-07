@@ -10,15 +10,14 @@ Convert table of numbers from CSV text file to seismic traces in MSEED file.
 
 **Core dependencies:**
 * Python 3.4+ (`pathlib`)
-* ObsPy 1.4 (tested)
-* pandas 2.0 (tested)
+* obspy (tested for 1.4.0)
+* pandas(tested for 2.0.3)
 """
 ################################## IMPORTS ####################################
 # Python standard library imports
 from pathlib import Path
 
 # Necessary packages (not in standard lib)
-import numpy
 import obspy
 import pandas
 

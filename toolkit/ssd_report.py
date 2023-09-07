@@ -3,17 +3,15 @@
 # abramsci/seismology/toolkit/ssd_report.py
 """
 A collection of (data)classes for handling SSD report format (DIMAS app)
-
-...
-
+ 
 **Copyright:** 2023, Sergei Abramenkov (https://github.com/abramsci)
                      Viktoria Komzeleva (https://github.com/Wehmut-kvp)
 
-**License:** [MIT](LICENSE)
+**License:** [MIT](../LICENSE)
 
 **Core dependencies:**
-    Python 3.10+ (match-statement=3.10, `dataclasses`=3.7, f-strings=3.6)
-    ObsPy 1.4 (tested)
+* Python 3.10+ (match-statement=3.10, `dataclasses`=3.7, f-strings=3.6)
+* obspy (tested for 1.4.0)
 """
 ################################## IMPORTS ####################################
 # Python standard library imports
@@ -30,6 +28,7 @@ from obspy.core.event.base import QuantityError
 TOOLKIT_DIR = Path(__file__).parent
 EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'example.ssd')
 OLD_EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'old_example.ssd')
+
 
 ############################# AUXILIARY FUNCTIONS #############################
 def _cleanup(line: str):
