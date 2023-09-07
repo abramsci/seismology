@@ -22,12 +22,14 @@ from pathlib import Path
 from obspy import UTCDateTime
 from obspy.core.event.base import QuantityError
 
+# Local application/library specific imports
+from misc import TOOLKIT_DIR
+
 
 ############################## GLOBAL CONSTANTS ###############################
 # Paths to directories/files - may/should evolve to command line arguments
-TOOLKIT_DIR = Path(__file__).parent
-EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'example.ssd')
-OLD_EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'old_example.ssd')
+SSD_EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'example.ssd')
+SSD_OLD_EXAMPLE_PATH = TOOLKIT_DIR.joinpath('data', 'old_example.ssd')
 
 
 ############################# AUXILIARY FUNCTIONS #############################
@@ -389,9 +391,9 @@ class EventRecord:
 ############################## SCRIPT BEHAIVIOR ###############################
 # Python idiom to check if the module is not imported (script behaivior)
 if __name__ == '__main__':
-    record = EventRecord.read(EXAMPLE_PATH)
+    record = EventRecord.read(SSD_EXAMPLE_PATH)
     print(record)
-    old_record = EventRecord.read(OLD_EXAMPLE_PATH)
+    old_record = EventRecord.read(SSD_OLD_EXAMPLE_PATH)
     print(old_record)
     exit(0)
 ###############################################################################

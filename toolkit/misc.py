@@ -7,10 +7,16 @@ Miscellaneous quality of life functions.
 **Copyright:** 2023, Sergei Abramenkov (https://github.com/abramsci)
 
 **License:** [MIT](../LICENSE)
+* Python 3.4+ (`pathlib`)
 """
 ################################## IMPORTS ####################################
 # Python standard library imports
+from pathlib import Path
 import math
+
+
+############################## GLOBAL CONSTANTS ###############################
+TOOLKIT_DIR = Path(__file__).parent
 
 
 ############################ BASIC MATH FUNCTIONS #############################
@@ -25,6 +31,6 @@ def next_power_of_two(x: float) -> int:
 
 def nearest_power_of_two(x: float) -> int:
     lesser = prev_power_of_two(x)
-    bigger = next_pow_of_two(x)
+    bigger = next_power_of_two(x)
     return lesser if abs(x - lesser) < abs(bigger - x) else bigger
 
