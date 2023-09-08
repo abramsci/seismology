@@ -1,0 +1,10 @@
+# Obsidian specific files
+.obsidian/
+
+# Cache and other temporary files
+__pycache__
+
+# OS specific files
+.trash/
+.DS_Store
+desktop.ini
