@@ -23,7 +23,7 @@ from obspy import UTCDateTime
 from obspy.core.event.base import QuantityError
 
 # Local application/library specific imports
-from misc import TOOLKIT_DIR
+from misc import TOOLKIT_DIR, get_paths
 
 
 ############################## GLOBAL CONSTANTS ###############################
@@ -303,7 +303,7 @@ class EventRecord:
         we simply rely on .startswith('#ARRIV') to catch either.
         Also - instead of #SSDREPORT, old versions use #FILENAME word.
     """
-    id: str
+    name: str
     origin: OriginRecord
     picks: dict[PickRecord]
     amplitudes: dict[AmplitudeRecord]
@@ -323,7 +323,7 @@ class EventRecord:
         Parse a list of strings to g instance.
         """
         # Empty (for now) definitions for the class default contructor
-        id = None; origin = None; picks = []; amplitudes = []
+        name = None; origin = None; picks = []; amplitudes = []
         # Support/running variables
         channel_line = None     # Current channel (block header)
         arrs = {}               # Dict of ARRIVAL blocks -> picks
@@ -334,7 +334,7 @@ class EventRecord:
             if content[0].startswith('#SSDREPORT') or \
                             content[0].startswith('#FILENAME'):
                 words = _cleanup(content[0].replace('=',' ')).split()
-                id = words[-1] if len(words) >= 2 else 'Unknown ID'
+                name = words[-1] if len(words) >= 2 else 'Unknown'
                 content.pop(0)
             elif content[0].startswith('#EARTHQUAKE'):
                 equake.append(content[0])
@@ -371,7 +371,7 @@ class EventRecord:
         # Final part - uniting newly made attributes into an instance
         if not origin or not picks:
             return None
-        return cls(id, origin, picks, amplitudes)
+        return cls(name, origin, picks, amplitudes)
 
     @classmethod
     def read(cls, path: Path):
@@ -386,6 +386,114 @@ class EventRecord:
                 return None
             # After content is read simply call _parse_ssd to proceed
             return cls._parse(content)
+
+    def to_LOTOS(self, stations: list) -> str:
+        """
+        Formats event record info to text block of LOTOS `rays.dat`.
+        """
+        source = f'{self.origin.lon}\t{self.origin.lat}\t{self.origin.lat}'
+        header_line = f'{source}\t{len(self.picks)}\n'
+        lines = []
+        for chan, pick in self.picks.items():
+            if pick.phase == 'P' or pick.phase == 'p':
+                phase = '1'
+            elif pick.phase == 'S' or pick.phase == 's':
+                phase = '2'
+            else:
+                phase = '3'
+            lines.append(f'\t{phase}\t{stations.index(chan.sta)}\t{pick.time}')               
+        return header_line + '\n'.join(lines) 
+
+
+@dataclass
+class WaveArrival:
+    """
+    All info that can be used to describe a single seismic ray.
+    
+    Attributes/content:
+        source - 
+        receiver -
+        phase -
+        time_sec -
+        time_picked - 
+        #time_modeled -
+    """
+    source: str
+    receiver: str
+    phase: str
+    time_sec: float
+    time_picked: UTCDateTime
+
+############################### CORE FUNCTIONS ################################
+def read_catalog(pattern: Path) -> dict[EventRecord]:
+    """
+    Read and parse SSD report(s), return dictionary of records - catalog.
+    """
+    catalog = {}
+    for path in get_paths(pattern):
+        event = EventRecord.read(path)
+        if event:
+            catalog[event.name] = event
+    return catalog
+
+
+def get_arrivals(catalog: dict[EventRecord], receiver_code: str) -> list:
+    """
+    Get list of arrivals from catalog for specific station/receiver code. 
+    """
+    arrivals = []
+    for src, event in catalog.items():
+        channels_needed = [chan for chan in event.picks.keys()
+                                if f'{chan.net}.{chan.sta}' == receiver_code]
+        for channel in channels_needed:
+            utc = event.picks[channel].time
+            t = utc - event.origin.time
+            phase = event.picks[channel].phase
+            arrivals.append(WaveArrival(src, receiver_code, phase, t, utc))
+    return arrivals#, receiver
+
+
+def extract_LOTOS_inidata(catalog: dict[EventRecord]):
+    """
+    Extract and reformat arrivals for the LOTOS algorithm inidata folder.
+    """
+    channels_all = []
+    for event in catalog.values():
+        channels = list(event.picks.keys())
+        channels_all.extend(channels)
+    print(f'Checking catalog - {len(channels_all)} arrivals in total.')
+    sts = {f'{chan.net}.{chan.sta}' for chan in channels_all}
+    arrs = [get_arrivals(catalog, station) for station in sts]
+    info = [(i, station, len(arrivals)) 
+            for i, station, arrivals in zip(range(len(sts)), sts, arrs)]
+    info = sorted(info, key=lambda x:x[2])
+    # Formating inidata/stat_ft.dat file 
+    print(f'\nForming |stat_ft.dat| file content as long string:')
+    stat_ft = ''
+    rule = {}
+    for i, line in zip(range(1, len(info) + 1), info):
+        stat_ft += f'LON\tLAT\tDEPTH\t{line[1]}\n'
+        rule[line[1]] = i
+        print(f'{line[2]}\t arrivals for \t|{line[1]}|\t - indexed |{i}|')
+    # Formating inidata/rays.dat file 
+    print(f'\nForming |stat_ft.dat| file content as long string')
+    rays = ''
+    for record, event in catalog.items():
+        n = len(event.picks)
+        avg = 0
+        source_line = f'{event.origin.lon}\t{event.origin.lat}\t'
+        source_line += f'{event.origin.depth}\t{n}\n'        
+        #print(source_line)
+        block = ''
+        for channel, pick in event.picks.items():
+            phase = '1' if pick.phase == 'P' else '2'   # ! quick and dirty !
+            station_index = rule[f'{channel.net}.{channel.sta}']
+            arrival = pick.time - event.origin.time
+            avg += arrival
+            block += f'\t{phase}\t{station_index}\t{arrival}\n'
+        rays += source_line + block
+        print(f'Event {record}: {n} picks, average arrival time: {avg / n:.4f}')
+    return stat_ft, rays
 
 
 ############################## SCRIPT BEHAIVIOR ###############################

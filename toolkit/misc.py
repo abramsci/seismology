@@ -41,3 +41,18 @@ def nearest_power_of_two(x: float) -> int:
 ########################### OBSPY RELATED FUNCTIONS ###########################
 def get_code(stats: obspy.core.trace.Stats) -> str:
     return f'{stats.network}.{stats.station}.{stats.location}.{stats.channel}'
+
+
+############################## USEFUL I/O TRICKS ##############################
+def get_paths(pattern: Path):
+    print(f'\nRevealing pattern: |{pattern}|')
+    if pattern.is_file():
+        yield pattern
+    elif pattern.is_dir():
+        for path in pattern.iterdir():
+            if path.is_file():
+                yield path
+    else:
+        for path in pattern.parent.glob(pattern.name):
+            if path.is_file():
+                yield path
