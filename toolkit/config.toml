@@ -1,0 +1,66 @@
+# Default configuration for SAO toolkit applications
+version = '0.0.3'
+
+############################ 7-PANELS LAYOUT REWISED ##########################
+#
+#       X++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++X
+#       +=MAINMENU====================STATUSLINE/PROGRESSBAR=========+
+#       +/----------\/------\/----------------------\/--------------\+
+#       +|=LSUBMENU=||      ||                      ||=====RSUBMENU=|+
+#       +|          ||      ||                      ||              |+
+#       +| EXPLORER ||  C   ||        DATES         ||     KNOBS    |+
+#       +|    A     ||  O   ||          D           ||       B      |+
+#       +|          ||  N   ||                      |\--------------/+
+#       H|          ||  T   ||                      |/--------------\+
+#       V|          ||  E   |\----------------------/|              |+
+#       +\----------/|  X   |/----------------------\|              |+
+#       +/----------\|  T   ||                      ||              |+
+#       +|          ||      ||                      ||              |+
+#       +|  GRAPH   H|  C   H|        FOCUS         H|     NOTES    H+
+#       +|    G     L|      W|          F           F|       E      R+
+#       +|          ||      ||                      ||              |+
+#       +\------WL--/\--WW--/\------------------WF--/\----------WR--/+
+#       X++++++++++++++++++++++++++++++WV++++++++++++++++++++++++++++X
+[layout]
+    pad = 8         # PAD = 8       # Padding in px
+    wwrd = 48       # WWRD = 48     # Word width (5 chars of Iosevka 20pt)
+    wcol = 96       # WCOL = 96     # Column with (two words)
+    wl = 320        # WL = 3 * WCOL + 5 * PAD       # Left dock width 
+    wc = 200        # WC = 2 * WCOL + PAD           # Context column width
+    wf = 488        # WF = 5 * WCOL + PAD           # Focus window width
+    wr = 392        # WR = 4 * WCOL + PAD           # Right dock width
+    hrow = 64       # HROW : int = 64       # Status/menu bar height
+    hl = 320        # HL =  5 * HROW        # Left dock bottom (GRAPH) height
+    hc = 704        # HC = 10 * HROW        # Context full column height
+    hf = 352        # HF =  6 * HROW        # Focus window height
+    hr = 384        # HR =  7 * HROW        # Right dock bottom (NOTES) height
+    
+# Fonts for GUI elements - these files must be in 'assets' folder
+[font.base]
+    file = 'IosevkaNerdFont-Regular.ttf'
+    size = 20
+[font.code]
+    file = 'IosevkaNerdFontMono-Regular.ttf'
+    size = 14
+[font.text]
+    file = 'Monitorica-Rg.ttf'
+    size = 10
+
+[theme]
+    name = 'Default'
+    [theme.style]
+        WindowPadding = [8, 8]
+        ItemSpacing = [8, 8]
+        ChildBorderSize = 0
+        FrameBorderSize = 1
+        FrameRounding = 4
+    [theme.color]
+        MenuBarBg = [227, 133, 79, 255]
+        Text = [0, 0, 0, 255]
+        WindowBg = [255, 255, 255, 255]
+        ChildBg = [255, 255, 255, 255]
+        PopupBg = [255, 255, 255, 255]
+        Header = [181, 143, 195, 255]
+        TableHeaderBg = [181, 143, 195, 255]
+        FrameBg = [192, 192, 192,  64]
+        Button = [154, 105, 173, 255]

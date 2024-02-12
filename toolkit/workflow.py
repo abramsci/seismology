@@ -38,21 +38,6 @@ MARGIN_SEC = float(10.0)            # Margin for cutting waveform
 
 
 ############################### CORE FUNCTIONS ################################
-def read_catalog(dir: Path) -> dict:
-    """
-    Read and parse all SSD reports in a dir, return catalog - dict of records.
-    """
-    catalog = {}
-    if not dir.is_dir():
-        print('Specify a dir with SSD file(s) to read catalog.')
-        return catalog
-    for path in dir.iterdir():
-        event = EventRecord.read(path)
-        if event:
-            catalog[event.id] = event
-    return catalog
-
-
 def match_waveforms(stream: obspy.Stream, catalog: dict) -> dict:
     """
     Match chosen stream with the catalog to get waveforms dictionary.

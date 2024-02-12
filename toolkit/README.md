@@ -10,10 +10,11 @@ NOT to reinvent bike parts - just assemble a custom touring bicycle ^-^
 
 ## Environment used (~1.5 GB)
 
-``` sh
-conda create --name seismology --channel conda-forge python=3.10 obspy pygmt pyasdf constructor
+```sh
+conda create -n seismology -c conda-forge python=3.11 obspy cartopy pygmt icecream pyyaml
+conda activate seismology
+pip install dearpygui
 ```
-
 
 ## Some examples
 
